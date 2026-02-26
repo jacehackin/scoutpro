@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Scout Pro 2026</title>
+   <style>
+      :root {
+         --bg: #05070a;
+         --sidebar: #0f172a;
+         --card: #1e293b;
+         --input: #111827;
+         --accent: #fbbf24;
+         --text: #f1f5f9;
+         --muted: #a0aec0;
+         --border: #334155;
+      }
+
+      body.light-mode {
+         --bg: #f8fafc;
+         --sidebar: #ffffff;
+         --card: #ffffff;
+         --input: #f1f5f9;
+         --accent: #d97706;
+         --text: #0f172a;
+         --muted: #64748b;
+         --border: #cbd5e1;
+      }
+
+      body {
+         font-family: 'Inter', sans-serif;
+         background: var(--bg);
+         color: var(--text);
+         margin: 0;
+         display: flex;
+         height: 100vh;
+         overflow: hidden;
+         transition: background 0.3s, color 0.3s;
+      }
+
+      /* Sidebar */
+      .sidebar {
+         width: 300px;
+         background: var(--sidebar);
+         border-right: 1px solid var(--border);
+         padding: 20px;
+         display: flex;
+         flex-direction: column;
+         overflow-y: auto;
+         position: fixed;
+         left: -350px;
+         top: 0;
+         bottom: 0;
+         z-index: 2000;
+         transition: left 0.3s ease;
+         box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .sidebar.open {
+         left: 0;
+      }
+
+      .sidebar-overlay {
+         display: none;
+         position: fixed;
+         inset: 0;
+         background: rgba(0, 0, 0, 0.6);
+         z-index: 1500;
+         backdrop-filter: blur(2px);
+      }
+
+      .sidebar-overlay.open {
+         display: block;
+      }
+
+      .close-sidebar-btn {
+         background: none;
+         border: none;
+         color: var(--muted);
+         font-size: 24px;
+         text-align: right;
+         cursor: pointer;
+         margin-bottom: 10px;
+      }
+
+      .side-title {
+         font-size: 11px;
+         font-weight: 800;
+         color: var(--accent);
+         letter-spacing: 1px;
+         margin-bottom: 15px;
+         text-transform: uppercase;
+         margin-top: 20px;
+      }
+
+      .nav-btn {
+         background: var(--card);
+         color: var(--text);
+         border: 1px solid var(--border);
+         padding: 12px;
+         border-radius: 8px;
+         font-weight: bold;
+         cursor: pointer;
+         margin-bottom: 10px;
+         transition: 0.2s;
+         text-align: left;
+      }
+
+      .nav-btn.active-nav {
+         border-color: var(--accent);
+         color: var(--accent);
+         background: rgba(251, 191, 36, 0.1);
+      }
+
+      /* Watchlist / Favorites */
+      .watch-card {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         padding: 10px;
+         background: var(--input);
+         border-radius: 8px;
+         margin-bottom: 10px;
+         border-left: 3px solid var(--accent);
+         border: 1px solid var(--border);
+      }
+
+      .watch-card:hover {
+         border-color: var(--accent);
+         cursor: pointer;
+      }
+
+      .watch-info {
+         display: flex;
+         align-items: center;
+         gap: 10px;
+         flex: 1;
+         font-size: 13px;
+         font-weight: bold;
+      }
+
+      .watch-img {
+         width: 30px;
+         height: 30px;
+         border-radius: 50%;
+         background: #ffffff;
+         object-fit: contain;
+         padding: 2px;
+         border: 1px solid var(--border);
+      }
+
+      .remove-fav {
+         background: none;
+         border: none;
+         color: #ef4444;
+         cursor: pointer;
+         font-size: 16px;
+         font-weight: bold;
+         padding: 0 5px;
+      }
+
+      .star-btn {
+         background: none;
+         border: none;
+         color: var(--muted);
+         font-size: 22px;
+         cursor: pointer;
+         transition: 0.2s;
+         padding: 5px;
+      }
+
+      .star-btn:hover {
+         transform: scale(1.2);
+      }
+
+      .star-btn.is-fav {
+         color: var(--accent);
+      }
+
+      /* Main Content */
+      .main {
+         flex: 1;
+         overflow-y: auto;
+         padding: 30px;
+         position: relative;
+      }
+
+      .header-flex {
+         display: flex;
+         justify-content: space-between;
+         align-items: flex-end;
+         margin-bottom: 25px;
+         flex-wrap: wrap;
+         gap: 15px;
+      }
+
+      .title-row {
+         display: flex;
+         align-items: center;
+         gap: 15px;
+      }
+
+      .hamburger-btn {
+         font-size: 28px;
+         background: none;
+         border: none;
+         color: var(--text);
+         cursor: pointer;
+         padding: 0;
+      }
+
+      .controls-row {
+         display: flex;
+         gap: 10px;
+         align-items: center;
+         flex-wrap: wrap;
+      }
+
+      .control-select,
+      .control-date {
+         background: var(--input);
+         border: 1px solid var(--border);
+         color: var(--text);
+         padding: 10px 15px;
+         border-radius: 8px;
+         font-size: 14px;
+         outline: none;
+         cursor: pointer;
+         font-weight: 600;
+         height: 42px;
+         box-sizing: border-box;
+      }
+
+      /* Date Navigation Buttons */
+      .date-nav-btn {
+         background: var(--input);
+         color: var(--text);
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         width: 42px;
+         height: 42px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         cursor: pointer;
+         font-size: 14px;
+         font-weight: bold;
+         transition: 0.2s;
+      }
+
+      .date-nav-btn:hover {
+         background: var(--card);
+         border-color: var(--accent);
+         color: var(--accent);
+      }
+
+      .date-today-btn {
+         background: var(--input);
+         color: var(--text);
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         padding: 0 15px;
+         height: 42px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         cursor: pointer;
+         font-size: 13px;
+         font-weight: bold;
+         transition: 0.2s;
+      }
+
+      .date-today-btn:hover {
+         background: var(--card);
+         border-color: var(--accent);
+         color: var(--accent);
+      }
+
+      /* Live Pulse Indicator */
+      .live-dot {
+         height: 12px;
+         width: 12px;
+         background-color: #ef4444;
+         border-radius: 50%;
+         display: none;
+         margin-left: 12px;
+         box-shadow: 0 0 10px #ef4444;
+         opacity: 0.3;
+         transition: all 0.2s ease-out;
+      }
+
+      /* Grid & Cards */
+      .grid {
+         display: grid;
+         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+         gap: 20px;
+      }
+
+      .card {
+         background: var(--card);
+         border: 1px solid var(--border);
+         border-radius: 12px;
+         padding: 15px;
+         cursor: pointer;
+         transition: 0.2s;
+      }
+
+      .card:hover {
+         border-color: var(--accent);
+         transform: translateY(-2px);
+      }
+
+      .game-status-box {
+         text-align: center;
+         font-size: 13px;
+         font-weight: 900;
+         color: var(--accent);
+         margin-bottom: 10px;
+         background: var(--input);
+         padding: 8px;
+         border-radius: 6px;
+         border: 1px solid var(--border);
+      }
+
+      .box-score {
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         background: var(--sidebar);
+      }
+
+      .team-row {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         padding: 12px;
+         font-weight: 800;
+         font-size: 15px;
+         border-bottom: 1px solid var(--border);
+      }
+
+      .stat-r {
+         color: var(--accent);
+         font-size: 18px;
+         font-weight: 900;
+      }
+
+      /* Possession / Infield Ring */
+      .possession-ring {
+         box-shadow: 0 0 0 4px var(--accent);
+         border-radius: 50%;
+         background: #fff;
+      }
+
+      /* Tables */
+      .data-table {
+         width: 100%;
+         border-collapse: collapse;
+         background: var(--card);
+         border-radius: 8px;
+         border: 1px solid var(--border);
+         margin-bottom: 20px;
+         overflow: hidden;
+      }
+
+      .data-table th {
+         background: var(--sidebar);
+         padding: 12px;
+         text-align: left;
+         font-size: 12px;
+         color: var(--muted);
+         border-bottom: 1px solid var(--border);
+      }
+
+      .data-table td {
+         padding: 12px;
+         border-bottom: 1px solid var(--border);
+         font-size: 14px;
+         font-weight: bold;
+      }
+
+      .data-table tr:hover {
+         background: var(--input);
+      }
+
+      .group-header {
+         background: rgba(251, 191, 36, 0.05);
+         color: var(--accent);
+         font-weight: 900;
+         font-size: 16px;
+         padding: 15px !important;
+      }
+
+      /* News Cards */
+      .news-card {
+         display: flex;
+         flex-direction: column;
+         padding: 0;
+         overflow: hidden;
+      }
+
+      .news-img {
+         width: 100%;
+         height: 180px;
+         object-fit: cover;
+         background: var(--input);
+         border-bottom: 1px solid var(--border);
+      }
+
+      .news-content {
+         padding: 20px;
+         display: flex;
+         flex-direction: column;
+         flex: 1;
+      }
+
+      .news-headline {
+         font-size: 16px;
+         font-weight: 900;
+         margin-bottom: 10px;
+         line-height: 1.4;
+         color: var(--text);
+      }
+
+      .news-desc {
+         font-size: 13px;
+         color: var(--muted);
+         line-height: 1.5;
+      }
+
+      /* Search */
+      .search-box {
+         width: 100%;
+         padding: 15px;
+         background: var(--input);
+         border: 1px solid var(--border);
+         color: var(--text);
+         border-radius: 8px;
+         font-size: 16px;
+         margin-bottom: 20px;
+         outline: none;
+      }
+
+      .search-result-card {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         background: var(--card);
+         padding: 15px;
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         margin-bottom: 10px;
+         cursor: pointer;
+      }
+
+      .search-result-card:hover {
+         border-color: var(--accent);
+      }
+
+      .type-badge {
+         font-size: 10px;
+         padding: 3px 8px;
+         border-radius: 12px;
+         font-weight: bold;
+         text-transform: uppercase;
+         border: 1px solid var(--border);
+         margin-right: 15px;
+      }
+
+      .type-team {
+         background: rgba(59, 130, 246, 0.1);
+         color: #3b82f6;
+         border-color: #3b82f6;
+      }
+
+      .type-athlete {
+         background: rgba(251, 191, 36, 0.1);
+         color: var(--accent);
+         border-color: var(--accent);
+      }
+
+      /* Utilities */
+      .btn-green {
+         background: rgba(16, 185, 129, 0.1);
+         color: #10b981;
+         border: 1px solid #10b981;
+         padding: 10px 15px;
+         border-radius: 8px;
+         font-weight: bold;
+         cursor: pointer;
+         transition: 0.2s;
+      }
+
+      .btn-green:hover {
+         background: #10b981;
+         color: #fff;
+      }
+
+      .btn-blue {
+         background: #3b82f6;
+         color: white;
+         border: none;
+         padding: 12px;
+         border-radius: 8px;
+         font-weight: bold;
+         cursor: pointer;
+         transition: 0.2s;
+         width: 100%;
+      }
+
+      .btn-blue:hover {
+         background: #2563eb;
+      }
+
+      .error-msg {
+         background: var(--card);
+         padding: 20px;
+         text-align: center;
+         border-radius: 12px;
+         color: var(--muted);
+         border: 1px solid var(--border);
+      }
+
+      /* Settings Toggles */
+      .settings-box {
+         background: var(--card);
+         padding: 25px;
+         border-radius: 12px;
+         border: 1px solid var(--border);
+         flex: 1;
+         min-width: 300px;
+      }
+
+      .settings-header {
+         font-size: 18px;
+         font-weight: 900;
+         color: var(--accent);
+         margin-top: 0;
+         margin-bottom: 20px;
+         padding-bottom: 10px;
+         border-bottom: 1px solid var(--border);
+      }
+
+      .toggle-row {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         margin-bottom: 15px;
+         font-weight: bold;
+         font-size: 14px;
+      }
+
+      .switch {
+         position: relative;
+         display: inline-block;
+         width: 44px;
+         height: 24px;
+      }
+
+      .switch input {
+         opacity: 0;
+         width: 0;
+         height: 0;
+      }
+
+      .slider {
+         position: absolute;
+         cursor: pointer;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background-color: var(--border);
+         transition: .4s;
+         border-radius: 24px;
+      }
+
+      .slider:before {
+         position: absolute;
+         content: "";
+         height: 18px;
+         width: 18px;
+         left: 3px;
+         bottom: 3px;
+         background-color: white;
+         transition: .4s;
+         border-radius: 50%;
+      }
+
+      input:checked+.slider {
+         background-color: var(--accent);
+      }
+
+      input:checked+.slider:before {
+         transform: translateX(20px);
+      }
+
+      /* Modals & Live Game Content */
+      .modal-overlay {
+         display: none;
+         position: fixed;
+         inset: 0;
+         background: rgba(0, 0, 0, 0.8);
+         z-index: 3000;
+         padding: 40px;
+         overflow-y: auto;
+         backdrop-filter: blur(5px);
+      }
+
+      .game-center {
+         max-width: 800px;
+         margin: auto;
+         background: var(--sidebar);
+         border-radius: 16px;
+         border: 1px solid var(--border);
+         overflow: hidden;
+         position: relative;
+      }
+
+      .gc-header-banner {
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         gap: 25px;
+         padding: 25px;
+         background: var(--card);
+         border-bottom: 1px solid var(--border);
+      }
+
+      .gc-logo {
+         width: 60px;
+         height: 60px;
+         object-fit: contain;
+         background: #fff;
+         border-radius: 50%;
+         padding: 5px;
+         border: 1px solid var(--border);
+      }
+
+      .gc-abbr {
+         font-weight: 900;
+         font-size: 16px;
+         margin-top: 8px;
+         color: var(--text);
+         text-align: center;
+      }
+
+      .gc-score {
+         font-size: 42px;
+         font-weight: 900;
+         color: var(--accent);
+      }
+
+      .gc-at {
+         font-size: 18px;
+         color: var(--muted);
+         font-weight: bold;
+      }
+
+      .gc-body {
+         padding: 25px;
+      }
+
+      .live-situation-box {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         flex-wrap: wrap;
+         gap: 20px;
+         background: var(--input);
+         padding: 25px;
+         border-radius: 12px;
+         margin-bottom: 25px;
+         border: 1px solid var(--border);
+      }
+
+      .diamond-container {
+         width: 60px;
+         height: 60px;
+         position: relative;
+         transform: rotate(45deg);
+         flex-shrink: 0;
+      }
+
+      .diamond {
+         width: 100%;
+         height: 100%;
+         position: relative;
+      }
+
+      .base {
+         width: 18px;
+         height: 18px;
+         background: var(--card);
+         border: 2px solid var(--border);
+         position: absolute;
+         transition: 0.3s;
+      }
+
+      .base.active {
+         background: #fbbf24;
+         border-color: #d97706;
+         box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+      }
+
+      .base.b2 {
+         top: 0;
+         left: 0;
+      }
+
+      .base.b1 {
+         top: 0;
+         right: 0;
+      }
+
+      .base.b3 {
+         bottom: 0;
+         left: 0;
+      }
+
+      .base.home {
+         bottom: 0;
+         right: 0;
+         border-radius: 50% 50% 0 50%;
+         background: #fbbf24;
+         border-color: #d97706;
+      }
+
+      .batter-profile {
+         display: flex;
+         align-items: center;
+         gap: 15px;
+         border-left: 2px solid var(--border);
+         padding-left: 20px;
+      }
+
+      .batter-img {
+         width: 50px;
+         height: 50px;
+         border-radius: 50%;
+         background: #fff;
+         object-fit: cover;
+         border: 2px solid var(--border);
+      }
+
+      .pbp-list {
+         display: flex;
+         flex-direction: column;
+         gap: 12px;
+         max-height: 400px;
+         overflow-y: auto;
+         padding-right: 10px;
+         margin-bottom: 30px;
+      }
+
+      .pbp-list::-webkit-scrollbar {
+         width: 6px;
+      }
+
+      .pbp-list::-webkit-scrollbar-thumb {
+         background: var(--border);
+         border-radius: 10px;
+      }
+
+      .pbp-item {
+         background: var(--card);
+         border: 1px solid var(--border);
+         padding: 15px;
+         border-radius: 8px;
+         transition: 0.2s;
+      }
+
+      .batter-highlight {
+         background: rgba(251, 191, 36, 0.2);
+         color: var(--accent);
+         padding: 0 4px;
+         border-radius: 4px;
+         font-weight: 900;
+      }
+
+      .prob-bar-container {
+         display: flex;
+         height: 8px;
+         border-radius: 4px;
+         overflow: hidden;
+         background: var(--border);
+         width: 100%;
+         margin-top: 15px;
+      }
+
+      .prob-away {
+         height: 100%;
+         background: var(--muted);
+         transition: 0.5s;
+      }
+
+      .prob-home {
+         height: 100%;
+         background: var(--accent);
+         transition: 0.5s;
+      }
+   </style>
+</head>
+
+<body>
+
+   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+   <div class="sidebar" id="sidebar">
+      <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
+      <button class="nav-btn active-nav" id="nav-scores" onclick="switchMainView('scores')">⏱️ SCOREBOARD</button>
+      <button class="nav-btn" id="nav-standings" onclick="switchMainView('standings')">🏆 STANDINGS</button>
+      <button class="nav-btn" id="nav-leaders" onclick="switchMainView('leaders')">🏅 LEAGUE LEADERS</button>
+      <button class="nav-btn" id="nav-news" onclick="switchMainView('news')">🗞️ LATEST NEWS</button>
+      <button class="nav-btn" id="nav-search-view" onclick="switchMainView('search-view')">🔍 SEARCH</button>
+      <button class="nav-btn" id="nav-settings" onclick="switchMainView('settings')">⚙️ SETTINGS</button>
+
+      <div class="side-title">FAVORITES & ALERTS</div>
+      <div id="watchlist-area"></div>
+   </div>
+
+   <div class="main" id="main-content-area">
+      <div class="header-flex">
+         <div class="title-row">
+            <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+            <div>
+               <h1 style="margin: 0; margin-bottom: 5px; display:flex; align-items:center;">
+                  <span id="main-title">Live <span style="color:var(--accent)">Scoreboard</span></span>
+                  <div id="live-dot" class="live-dot"></div>
+               </h1>
+               <div style="font-size:12px; color:var(--muted);" id="sub-title">Select a game to view live stats</div>
+            </div>
+         </div>
+         <div class="controls-row" id="top-controls">
+
+            <div style="display:flex; align-items:center; gap:5px;" id="date-controls-wrapper">
+               <button class="date-nav-btn" onclick="changeDate(-1)" title="Previous Day">◀</button>
+               <input type="date" id="date-picker" class="control-date" onchange="fetchData()">
+               <button class="date-nav-btn" onclick="changeDate(1)" title="Next Day">▶</button>
+               <button class="date-today-btn" onclick="setToday()">Today</button>
+            </div>
+
+            <select id="sport-selector" class="control-select" onchange="syncSportAndFetch()">
+               <option value="baseball/mlb">MLB Baseball</option>
+               <option value="basketball/nba">NBA Basketball</option>
+               <option value="football/nfl">NFL Football</option>
+               <option value="hockey/nhl">NHL Hockey</option>
+            </select>
+
+            <div id="live-toggle-wrapper" style="display:flex; align-items:center; gap:10px; background: var(--input); padding: 0 15px; height: 42px; border-radius: 8px; border: 1px solid var(--border);">
+               <span style="font-size: 13px; font-weight: bold; color: var(--text);">Live Only</span>
+               <label class="switch" style="width: 36px; height: 20px;">
+                  <input type="checkbox" id="live-only-toggle" onchange="renderGames()">
+                  <span class="slider" style="border-radius: 20px;"></span>
+               </label>
+            </div>
+
+         </div>
+      </div>
+
+      <div class="grid" id="game-grid"></div>
+      <div class="grid" id="news-container" style="display:none;"></div>
+      <div id="standings-container" style="display:none; max-width: 1000px;"></div>
+      <div id="leaders-container" style="display:none; max-width: 1000px;"></div>
+
+      <div id="search-view-container" style="display:none; max-width: 800px;">
+         <input type="text" id="global-search-input" class="search-box" placeholder="Search athletes and teams in NFL, NBA, MLB, or NHL..." onkeyup="searchGlobal()">
+         <div id="global-search-results-area"></div>
+      </div>
+
+      <div id="settings-container" style="display:none;">
+         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div class="settings-box">
+               <h3 class="settings-header">App Preferences</h3>
+               <div style="margin-bottom: 15px;">
+                  <span style="font-size: 14px; font-weight: bold; display:block; margin-bottom:5px;">Default Sport</span>
+                  <select id="setting-sport" class="control-select" style="width: 100%;" onchange="saveSettings()">
+                     <option value="baseball/mlb">MLB Baseball</option>
+                     <option value="basketball/nba">NBA Basketball</option>
+                     <option value="football/nfl">NFL Football</option>
+                     <option value="hockey/nhl">NHL Hockey</option>
+                  </select>
+               </div>
+               <div>
+                  <span style="font-size: 14px; font-weight: bold; display:block; margin-bottom:5px;">App Theme</span>
+                  <select id="setting-theme" class="control-select" style="width: 100%;" onchange="saveSettings()">
+                     <option value="Dark Mode">Dark Mode</option>
+                     <option value="Light Mode">Light Mode</option>
+                  </select>
+               </div>
+            </div>
+
+            <div class="settings-box">
+               <h3 class="settings-header">Push Notifications</h3>
+               <p style="font-size:12px; color:var(--muted); margin-top: -10px; margin-bottom: 15px;">*Notifications only trigger while this tab is open.</p>
+               <button class="btn-blue" onclick="requestDesktopNotifications()" style="margin-bottom: 25px;">Allow Browser Notifications</button>
+
+               <div class="toggle-row">
+                  <span>Live Score Updates</span>
+                  <label class="switch"><input type="checkbox" id="notif-live" checked onchange="saveSettings()"><span class="slider"></span></label>
+               </div>
+               <div class="toggle-row" style="margin-top: 15px;">
+                  <span style="color:var(--accent);">Only Notify for Favorite Teams</span>
+                  <label class="switch"><input type="checkbox" id="notif-favs" checked onchange="saveSettings()"><span class="slider"></span></label>
+               </div>
+
+               <div class="toggle-row" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+                  <span>Mute Alert Sounds</span>
+                  <label class="switch"><input type="checkbox" id="notif-mute" onchange="saveSettings()"><span class="slider"></span></label>
+               </div>
+               <div style="margin-top: 15px;">
+                  <span style="font-size: 14px; font-weight: bold; display:block; margin-bottom:10px;">Alert Volume</span>
+                  <input type="range" id="notif-volume" min="0" max="100" value="50" style="width:100%;" onchange="saveSettings()">
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <div id="game-modal" class="modal-overlay">
+      <div style="text-align:right; max-width: 800px; margin: auto; padding-bottom: 10px;">
+         <button onclick="closeModal('game-modal')" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">✕</button>
+      </div>
+      <div class="game-center" id="game-center-content"></div>
+   </div>
+
+   <div id="profile-modal" class="modal-overlay" style="z-index:4000;">
+      <div style="text-align:right; max-width: 600px; margin: auto; padding-bottom:10px;">
+         <button onclick="closeModal('profile-modal')" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">✕</button>
+      </div>
+      <div class="game-center" id="profile-content-area" style="max-width: 600px; padding: 30px; text-align: center;"></div>
+   </div>
+
+   <script>
+      let currentView = 'scores';
+      let gamesDataCache = [];
+      let pollInterval = null;
+      let favorites = JSON.parse(localStorage.getItem('scoutProFavorites')) || [];
+      let currentGameId = null;
+      let previousGameStates = {};
+
+      const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+      window.onload = function() {
+         const savedSport = localStorage.getItem('scoutProSport') || 'baseball/mlb';
+         const savedTheme = localStorage.getItem('scoutProTheme') || 'Dark Mode';
+
+         document.getElementById('sport-selector').value = savedSport;
+         document.getElementById('setting-sport').value = savedSport;
+         document.getElementById('setting-theme').value = savedTheme;
+
+         document.getElementById('notif-live').checked = localStorage.getItem('scoutNotifLive') !== 'false';
+         document.getElementById('notif-favs').checked = localStorage.getItem('scoutNotifFavs') !== 'false';
+
+         document.getElementById('notif-mute').checked = localStorage.getItem('scoutNotifMute') === 'true';
+         document.getElementById('notif-volume').value = localStorage.getItem('scoutNotifVolume') || '50';
+
+         applyTheme(savedTheme);
+         renderFavorites();
+
+         setToday(false);
+
+         pollInterval = setInterval(() => {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const isToday = document.getElementById('date-picker').value === `${yyyy}-${mm}-${dd}`;
+
+            if (isToday && currentView === 'scores') {
+               fetchScoreboard(true);
+            }
+            if (document.getElementById('game-modal').style.display === 'block' && currentGameId && isToday) {
+               openGameModal(currentGameId, true);
+            }
+         }, 3000); // Polling every 3 seconds
+      };
+
+      function setToday(fetchDataAfter = true) {
+         const today = new Date();
+         const yyyy = today.getFullYear();
+         const mm = String(today.getMonth() + 1).padStart(2, '0');
+         const dd = String(today.getDate()).padStart(2, '0');
+         document.getElementById('date-picker').value = `${yyyy}-${mm}-${dd}`;
+         if (fetchDataAfter) fetchData();
+      }
+
+      function changeDate(offset) {
+         const picker = document.getElementById('date-picker');
+         if (!picker.value) return;
+         const currentDate = new Date(picker.value + 'T12:00:00');
+         currentDate.setDate(currentDate.getDate() + offset);
+
+         const yyyy = currentDate.getFullYear();
+         const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+         const dd = String(currentDate.getDate()).padStart(2, '0');
+
+         picker.value = `${yyyy}-${mm}-${dd}`;
+         fetchData();
+      }
+
+      function triggerLivePulse() {
+         const dot = document.getElementById('live-dot');
+         if (dot) {
+            dot.style.display = 'inline-block';
+            dot.style.opacity = '1';
+            dot.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+               dot.style.opacity = '0.3';
+               dot.style.transform = 'scale(1)';
+            }, 300);
+         }
+      }
+
+      function applyTheme(theme) {
+         if (theme === 'Light Mode') document.body.classList.add('light-mode');
+         else document.body.classList.remove('light-mode');
+      }
+
+      function saveSettings() {
+         const sport = document.getElementById('setting-sport').value;
+         const theme = document.getElementById('setting-theme').value;
+
+         localStorage.setItem('scoutProSport', sport);
+         localStorage.setItem('scoutProTheme', theme);
+         localStorage.setItem('scoutNotifLive', document.getElementById('notif-live').checked);
+         localStorage.setItem('scoutNotifFavs', document.getElementById('notif-favs').checked);
+         localStorage.setItem('scoutNotifMute', document.getElementById('notif-mute').checked);
+         localStorage.setItem('scoutNotifVolume', document.getElementById('notif-volume').value);
+
+         document.getElementById('sport-selector').value = sport;
+         applyTheme(theme);
+         fetchData();
+      }
+
+      function syncSportAndFetch() {
+         const sport = document.getElementById('sport-selector').value;
+         document.getElementById('setting-sport').value = sport;
+         saveSettings();
+         fetchData();
+      }
+
+      function toggleSidebar() {
+         document.getElementById('sidebar').classList.toggle('open');
+         document.getElementById('sidebar-overlay').classList.toggle('open');
+      }
+
+      function closeModal(id) {
+         document.getElementById(id).style.display = 'none';
+         if (id === 'game-modal') currentGameId = null;
+      }
+
+      function switchMainView(view) {
+         currentView = view;
+         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
+         document.getElementById('nav-' + view).classList.add('active-nav');
+
+         ['game-grid', 'standings-container', 'leaders-container', 'news-container', 'search-view-container', 'settings-container'].forEach(id => {
+            if (document.getElementById(id)) document.getElementById(id).style.display = 'none';
+         });
+
+         const isControlsView = (view === 'scores' || view === 'standings' || view === 'leaders' || view === 'news');
+         document.getElementById('top-controls').style.display = isControlsView ? 'flex' : 'none';
+
+         document.getElementById('date-controls-wrapper').style.display = (view === 'scores') ? 'flex' : 'none';
+         document.getElementById('live-toggle-wrapper').style.display = (view === 'scores') ? 'flex' : 'none';
+
+         if (view === 'scores') {
+            document.getElementById('game-grid').style.display = 'grid';
+            document.getElementById('main-title').innerHTML = 'Live <span style="color:var(--accent)">Scoreboard</span>';
+            document.getElementById('sub-title').innerText = 'Select a game to view live stats';
+            fetchScoreboard();
+         } else if (view === 'standings') {
+            document.getElementById('standings-container').style.display = 'block';
+            document.getElementById('main-title').innerHTML = 'League <span style="color:var(--accent)">Standings</span>';
+            document.getElementById('sub-title').innerText = 'Current season rankings';
+            fetchStandings();
+         } else if (view === 'leaders') {
+            document.getElementById('leaders-container').style.display = 'block';
+            document.getElementById('main-title').innerHTML = 'League <span style="color:var(--accent)">Leaders</span>';
+            document.getElementById('sub-title').innerText = 'Top performers across the league';
+            fetchLeaders();
+         } else if (view === 'news') {
+            document.getElementById('news-container').style.display = 'grid';
+            document.getElementById('main-title').innerHTML = 'Latest <span style="color:var(--accent)">News</span>';
+            document.getElementById('sub-title').innerText = 'Top headlines and stories from ESPN';
+            fetchNews();
+         } else if (view === 'search-view') {
+            document.getElementById('search-view-container').style.display = 'block';
+            document.getElementById('main-title').innerHTML = 'Universal <span style="color:var(--accent)">Search</span>';
+            document.getElementById('sub-title').innerText = 'Find athletes and teams in NFL, NBA, MLB, or NHL';
+            document.getElementById('global-search-input').focus();
+         } else if (view === 'settings') {
+            document.getElementById('settings-container').style.display = 'block';
+            document.getElementById('main-title').innerHTML = 'App <span style="color:var(--accent)">Settings</span>';
+            document.getElementById('sub-title').innerText = 'Manage your app experience';
+         }
+
+         if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+      }
+
+      function fetchData() {
+         if (currentView === 'scores') fetchScoreboard();
+         if (currentView === 'standings') fetchStandings();
+         if (currentView === 'leaders') fetchLeaders();
+         if (currentView === 'news') fetchNews();
+      }
+
+      function isFavorite(id, type) {
+         return favorites.some(f => String(f.id) === String(id) && f.type === type);
+      }
+
+      function toggleFavorite(id, name, type, img, sport, eventObj = null) {
+         if (eventObj) eventObj.stopPropagation();
+
+         const index = favorites.findIndex(f => String(f.id) === String(id) && f.type === type);
+         if (index > -1) {
+            favorites.splice(index, 1);
+         } else {
+            favorites.push({
+               id: String(id),
+               name,
+               type,
+               img,
+               sport
+            });
+         }
+
+         localStorage.setItem('scoutProFavorites', JSON.stringify(favorites));
+         renderFavorites();
+
+         if (currentView === 'search-view') searchGlobal();
+
+         const profileBtn = document.getElementById('fav-btn');
+         if (profileBtn) {
+            const isFav = index === -1;
+            profileBtn.className = isFav ? 'btn-green' : 'btn-blue';
+            profileBtn.innerText = isFav ? '★ Saved to Alerts!' : '⭐ Add to Alerts';
+         }
+      }
+
+      function renderFavorites() {
+         const area = document.getElementById('watchlist-area');
+         if (!favorites.length) {
+            area.innerHTML = `<div style="color:var(--muted); font-size:12px;">No alerts set. Star a team to get started!</div>`;
+            return;
+         }
+         area.innerHTML = favorites.map(f => {
+            const fallbackImg = f.type === 'Team' ? 'https://a.espncdn.com/favicon.ico' : 'https://a.espncdn.com/i/headshots/nophoto.png';
+            const clickAction = f.type === 'Team' ?
+               `openTeamProfile('${f.id}', '${f.name.replace(/'/g, "\\'")}', '${f.img}', '${f.sport}')` :
+               `openPlayerProfile('${f.id}', '${f.name.replace(/'/g, "\\'")}', '${f.img}', '${f.sport}')`;
+
+            return `
+            <div class="watch-card" onclick="${clickAction}">
+                <div class="watch-info">
+                    <img class="watch-img" src="${f.img || fallbackImg}">
+                    <div>
+                        <div>${f.name}</div>
+                        <div style="font-size:10px; color:var(--muted); font-weight:normal;">${f.type}</div>
+                    </div>
+                </div>
+                <button class="remove-fav" onclick="toggleFavorite('${f.id}', '${f.name.replace(/'/g, "\\'")}', '${f.type}', '', '', event)">✕</button>
+            </div>`;
+         }).join('');
+      }
+
+      async function fetchScoreboard(isPolling = false) {
+         const sport = document.getElementById('sport-selector').value;
+         const dateRaw = document.getElementById('date-picker').value.replace(/-/g, '');
+         const grid = document.getElementById('game-grid');
+
+         if (!isPolling) grid.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">Loading games...</div>';
+
+         try {
+            const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?dates=${dateRaw}`);
+            const data = await res.json();
+
+            if (isPolling) triggerLivePulse();
+
+            gamesDataCache = data.events || [];
+            renderGames(isPolling);
+
+         } catch (error) {
+            if (!isPolling) grid.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">Failed to load data. Please check connection.</div>';
+         }
+      }
+
+      function renderGames(isPolling = false) {
+         const grid = document.getElementById('game-grid');
+         const mainArea = document.getElementById('main-content-area');
+         const liveOnly = document.getElementById('live-only-toggle').checked;
+         let savedScroll = mainArea ? mainArea.scrollTop : 0;
+
+         if (gamesDataCache.length === 0) {
+            grid.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">No games scheduled for this date.</div>';
+            return;
+         }
+
+         let gamesToRender = gamesDataCache;
+
+         // Apply Live Only filter
+         if (liveOnly) {
+            gamesToRender = gamesDataCache.filter(game => game.status.type.state === 'in');
+         }
+
+         if (gamesToRender.length === 0 && liveOnly) {
+            grid.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">No live games currently in progress.</div>';
+            return;
+         }
+
+         grid.innerHTML = gamesToRender.map(game => {
+            const comp = game.competitions[0];
+            const home = comp.competitors.find(c => c.homeAway === 'home');
+            const away = comp.competitors.find(c => c.homeAway === 'away');
+            const state = game.status.type.state;
+            let statusDetail = game.status.type.shortDetail;
+            const sport = document.getElementById('sport-selector').value;
+
+            if (state === 'pre') {
+               const gameDate = new Date(game.date);
+               statusDetail = gameDate.toLocaleTimeString([], {
+                  hour: 'numeric',
+                  minute: '2-digit'
+               });
+            }
+
+            const awayScore = parseInt(away.score) || 0;
+            const homeScore = parseInt(home.score) || 0;
+
+            if (isPolling && previousGameStates[game.id]) {
+               const prev = previousGameStates[game.id];
+               const liveNotif = document.getElementById('notif-live').checked;
+               const favsOnly = document.getElementById('notif-favs').checked;
+               const isFav = isFavorite(home.team.id, 'Team') || isFavorite(away.team.id, 'Team');
+
+               if (liveNotif && (!favsOnly || isFav)) {
+                  if (prev.awayScore !== awayScore || prev.homeScore !== homeScore) {
+
+                     let notifBody = `${away.team.abbreviation} ${awayScore} - ${home.team.abbreviation} ${homeScore}\n${statusDetail}`;
+
+                     if (Notification.permission === "granted") {
+                        const isMuted = document.getElementById('notif-mute').checked;
+                        if (!isMuted) {
+                           alertSound.volume = document.getElementById('notif-volume').value / 100;
+                           alertSound.play().catch(err => console.log("Sound blocked:", err));
+                        }
+
+                        new Notification(`Score Alert: ${away.team.abbreviation} vs ${home.team.abbreviation}`, {
+                           body: notifBody,
+                           icon: home.team.logo
+                        });
+                     }
+                  }
+               }
+            }
+
+            previousGameStates[game.id] = {
+               homeScore,
+               awayScore,
+               statusDetail
+            };
+
+            let awayRingClass = '';
+            let homeRingClass = '';
+
+            if (sport.includes('mlb')) {
+               const inningText = statusDetail.toLowerCase();
+               if (inningText.includes('top') || inningText.includes('mid')) {
+                  awayRingClass = 'possession-ring';
+               } else if (inningText.includes('bot') || inningText.includes('end')) {
+                  homeRingClass = 'possession-ring';
+               }
+            } else {
+               let possessionTeamId = null;
+               if (comp.situation && comp.situation.possession) possessionTeamId = comp.situation.possession;
+               else if (comp.possession) possessionTeamId = comp.possession.id || comp.possession;
+
+               if (possessionTeamId === away.team.id) awayRingClass = 'possession-ring';
+               if (possessionTeamId === home.team.id) homeRingClass = 'possession-ring';
+            }
+
+            return `
+            <div class="card" onclick="openGameModal('${game.id}')">
+                <div class="game-status-box" style="${state === 'in' ? 'color: #ef4444;' : ''}">${statusDetail}</div>
+                <div class="box-score">
+                    <div class="team-row">
+                        <div style="display:flex; align-items:center; gap: 10px;">
+                            <img src="${away.team.logo}" width="25" class="${awayRingClass}"> ${away.team.displayName}
+                        </div>
+                        <div class="stat-r">${state === 'pre' ? '-' : away.score}</div>
+                    </div>
+                    <div class="team-row" style="border-bottom:none;">
+                        <div style="display:flex; align-items:center; gap: 10px;">
+                            <img src="${home.team.logo}" width="25" class="${homeRingClass}"> ${home.team.displayName}
+                        </div>
+                        <div class="stat-r">${state === 'pre' ? '-' : home.score}</div>
+                    </div>
+                </div>
+            </div>`;
+         }).join('');
+
+         if (mainArea) mainArea.scrollTop = savedScroll;
+      }
+
+      async function fetchLeaders() {
+         let sportValue = document.getElementById('sport-selector').value;
+
+         // Safety check: ensure URL format is correct
+         if (!sportValue.includes('/')) {
+            const sportMap = {
+               'nfl': 'football/nfl',
+               'nba': 'basketball/nba',
+               'mlb': 'baseball/mlb',
+               'nhl': 'hockey/nhl'
+            };
+            sportValue = sportMap[sportValue.toLowerCase()] || sportValue;
+         }
+
+         const container = document.getElementById('leaders-container');
+         container.innerHTML = '<div class="error-msg">Loading league leaders...</div>';
+
+         try {
+            const url = `https://site.api.espn.com/apis/site/v3/sports/${sportValue}/leaders`;
+            const res = await fetch(url);
+
+            if (!res.ok) {
+               throw new Error(`API returned ${res.status} (${res.statusText})`);
+            }
+
+            const data = await res.json();
+
+            let rawLeaders = null;
+            if (data.sports && data.sports[0]?.leagues?.[0]?.leaders) {
+               rawLeaders = data.sports[0].leagues[0].leaders;
+            } else if (data.leaders) {
+               rawLeaders = data.leaders;
+            } else if (data.categories) {
+               rawLeaders = data.categories;
+            }
+
+            let categories = [];
+            if (Array.isArray(rawLeaders)) {
+               categories = rawLeaders;
+            } else if (rawLeaders && typeof rawLeaders === 'object') {
+               if (Array.isArray(rawLeaders.categories)) categories = rawLeaders.categories;
+               else if (Array.isArray(rawLeaders.leaders)) categories = rawLeaders.leaders;
+               else categories = [rawLeaders];
+            }
+
+            if (categories.length === 0) {
+               container.innerHTML = '<div class="error-msg">Leader stats are not currently available.</div>';
+               return;
+            }
+
+            let html = '';
+
+            categories.slice(0, 6).forEach(category => {
+               const catName = category.displayName || category.name || 'Category';
+               const catAbbrev = category.abbreviation || 'STAT';
+               const leadersList = category.leaders || [];
+
+               html += `<div class="group-header">${catName}</div>`;
+               html += `<table class="data-table" style="margin-bottom: 30px;">
+                            <tr>
+                                <th style="width: 50px;">Rnk</th>
+                                <th>Athlete</th>
+                                <th>Team</th>
+                                <th style="text-align: right;">${catAbbrev}</th>
+                            </tr>`;
+
+               if (leadersList.length > 0) {
+                  const topLeaders = leadersList.slice(0, 10);
+                  topLeaders.forEach((leader, index) => {
+                     const ath = leader.athlete;
+                     if (!ath) return;
+
+                     const headshot = ath.headshot?.href || 'https://a.espncdn.com/i/headshots/nophoto.png';
+                     const team = leader.team;
+
+                     // --- SMART STAT CLEANER ---
+                     let cleanStat = leader.displayValue;
+
+                     // If ESPN gives us a messy string with commas, grab the raw number instead
+                     if (cleanStat && cleanStat.includes(',')) {
+                        if (leader.value !== undefined) {
+                           let num = Number(leader.value);
+                           if (!isNaN(num)) {
+                              // Format Batting Average / OBP / SLG / OPS to 3 decimals without the leading zero (e.g., .331)
+                              if (['AVG', 'OBP', 'SLG', 'OPS'].includes(catAbbrev)) {
+                                 cleanStat = num.toFixed(3).replace(/^0/, '');
+                              }
+                              // Format other decimals (like ERA or WHIP) to 2 decimals
+                              else if (!Number.isInteger(num)) {
+                                 cleanStat = num.toFixed(2);
+                              }
+                              // Format whole numbers (like HRs or RBIs)
+                              else {
+                                 cleanStat = num;
+                              }
+                           }
+                        }
+                     }
+                     // --------------------------
+
+                     html += `<tr>
+                            <td style="color: var(--muted);">${index + 1}</td>
+                            <td style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="openPlayerProfile('${ath.id}', '${ath.displayName.replace(/'/g, "\\'")}', '${headshot}', '${sportValue}')">
+                                <img src="${headshot}" width="35" style="border-radius:50%; background:#fff; border: 1px solid var(--border); object-fit: cover;">
+                                <div>
+                                    <div style="font-weight: 800; color: var(--text);">${ath.displayName}</div>
+                                </div>
+                            </td>
+                            <td>${team ? team.abbreviation : '--'}</td>
+                            <td style="text-align: right; color: var(--accent); font-size: 16px;">${cleanStat}</td>
+                        </tr>`;
+                  });
+               } else {
+                  html += `<tr><td colspan="4" style="text-align:center; color: var(--muted);">Data not available</td></tr>`;
+               }
+               html += `</table>`;
+            });
+            container.innerHTML = html;
+         } catch (error) {
+            console.error("Leaders Fetch Error:", error);
+            container.innerHTML = `
+                <div class="error-msg" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.05);">
+                    <strong style="color: #ef4444;">Failed to load league leaders.</strong><br>
+                    <span style="font-size: 13px; margin-top: 8px; display: block; color: var(--muted);">Reason: ${error.message}</span>
+                </div>`;
+         }
+      }
+
+      async function fetchStandings() {
+         const sport = document.getElementById('sport-selector').value;
+         const container = document.getElementById('standings-container');
+         container.innerHTML = '<div class="error-msg">Loading standings...</div>';
+         try {
+            const res = await fetch(`https://site.api.espn.com/apis/v2/sports/${sport}/standings`);
+            const data = await res.json();
+            if (!data.children) {
+               container.innerHTML = '<div class="error-msg">Standings not available currently.</div>';
+               return;
+            }
+            let html = '';
+            data.children.forEach(league => {
+               html += `<div class="group-header">${league.name}</div>`;
+               html += `<table class="data-table"><tr><th>Team</th><th>W</th><th>L</th><th>Win %</th></tr>`;
+               league.standings.entries.forEach(team => {
+                  const stats = team.stats;
+                  const wins = stats.find(s => s.name === 'wins')?.value || 0;
+                  const losses = stats.find(s => s.name === 'losses')?.value || 0;
+                  const winPct = stats.find(s => s.name === 'winPercent')?.displayValue || '.000';
+                  html += `<tr>
+                        <td style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="openTeamProfile('${team.team.id}', '${team.team.displayName}', '${team.team.logos[0].href}', '${sport}')">
+                            <img src="${team.team.logos[0].href}" width="25"> ${team.team.displayName}
+                        </td>
+                        <td>${wins}</td><td>${losses}</td><td>${winPct}</td>
+                    </tr>`;
+               });
+               html += `</table>`;
+            });
+            container.innerHTML = html;
+         } catch (error) {
+            container.innerHTML = '<div class="error-msg">Failed to load standings.</div>';
+         }
+      }
+
+      async function fetchNews() {
+         const sport = document.getElementById('sport-selector').value;
+         const container = document.getElementById('news-container');
+         container.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">Loading latest news...</div>';
+         try {
+            const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/news`);
+            const data = await res.json();
+            const articles = data.articles || [];
+            if (articles.length === 0) {
+               container.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">No news articles available.</div>';
+               return;
+            }
+            container.innerHTML = articles.map(article => {
+               const img = article.images && article.images.length > 0 ? article.images[0].url : 'https://a.espncdn.com/favicon.ico';
+               const link = article.links && article.links.web ? article.links.web.href : '#';
+               const date = new Date(article.published).toLocaleDateString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+               });
+               return `
+                <div class="card news-card" onclick="window.open('${link}', '_blank')">
+                    <img src="${img}" class="news-img" alt="News Image">
+                    <div class="news-content">
+                        <div style="font-size: 11px; color: var(--accent); font-weight: 800; margin-bottom: 8px;">${date}</div>
+                        <div class="news-headline">${article.headline}</div>
+                        <div class="news-desc">${article.description || ''}</div>
+                    </div>
+                </div>`;
+            }).join('');
+         } catch (error) {
+            container.innerHTML = '<div class="error-msg" style="grid-column: 1 / -1;">Failed to load news.</div>';
+         }
+      }
+
+      let searchTimeout = null;
+      async function searchGlobal() {
+         clearTimeout(searchTimeout);
+         searchTimeout = setTimeout(async () => {
+            const query = document.getElementById('global-search-input').value.trim().toLowerCase();
+            const area = document.getElementById('global-search-results-area');
+            if (query.length < 2) {
+               area.innerHTML = '';
+               return;
+            }
+            area.innerHTML = '<div class="error-msg">Searching database...</div>';
+            try {
+               const res = await fetch(`https://site.web.api.espn.com/apis/search/v2?query=${query}&limit=25`);
+               const data = await res.json();
+               let combined = [];
+               if (data.results) {
+                  data.results.forEach(r => {
+                     if (r.contents) {
+                        r.contents.forEach(item => {
+                           if (r.type === 'team' || (item.url && item.url.includes('/team/'))) combined.push({
+                              ...item,
+                              itemType: 'Team'
+                           });
+                           else if (r.type === 'athlete' || (item.url && item.url.includes('/player/'))) combined.push({
+                              ...item,
+                              itemType: 'Athlete'
+                           });
+                        });
+                     }
+                  });
+               }
+               if (!combined.length) return area.innerHTML = '<div class="error-msg">No results found.</div>';
+               area.innerHTML = combined.map(item => {
+                  let apiSport = document.getElementById('sport-selector').value;
+                  if (item.url) {
+                     if (item.url.includes('/mlb/')) apiSport = 'baseball/mlb';
+                     if (item.url.includes('/nba/')) apiSport = 'basketball/nba';
+                     if (item.url.includes('/nfl/')) apiSport = 'football/nfl';
+                     if (item.url.includes('/nhl/')) apiSport = 'hockey/nhl';
+                  }
+                  let cleanId = item.id;
+                  const idParts = String(item.id).split('~t:');
+                  if (idParts.length > 1) cleanId = idParts[1];
+                  else {
+                     const colonParts = String(item.id).split(':');
+                     cleanId = colonParts[colonParts.length - 1];
+                  }
+                  const clickAction = item.itemType === 'Athlete' ?
+                     `openPlayerProfile('${cleanId}', '${item.displayName.replace(/'/g, "\\'")}', '${item.image}', '${apiSport}')` :
+                     `openTeamProfile('${cleanId}', '${item.displayName.replace(/'/g, "\\'")}', '${item.image}', '${apiSport}')`;
+                  const badgeClass = item.itemType === 'Team' ? 'type-team' : 'type-athlete';
+                  const imgUrl = item.image && item.image !== 'undefined' ? item.image : (item.itemType === 'Team' ? 'https://a.espncdn.com/favicon.ico' : 'https://a.espncdn.com/i/headshots/nophoto.png');
+                  const favClass = isFavorite(cleanId, item.itemType) ? 'is-fav' : '';
+                  return `
+                    <div class="search-result-card" onclick="${clickAction}">
+                        <div style="display:flex; align-items:center; gap: 15px;">
+                            <img src="${imgUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#fff;border:1px solid var(--border);">
+                            <div>
+                                <div style="font-weight:bold;">${item.displayName}</div>
+                                <div style="font-size:12px; color:var(--muted);">${item.desc || ''}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <span class="type-badge ${badgeClass}">${item.itemType}</span>
+                            <button class="star-btn ${favClass}" onclick="toggleFavorite('${cleanId}', '${item.displayName.replace(/'/g, "\\'")}', '${item.itemType}', '${imgUrl}', '${apiSport}', event)">★</button>
+                        </div>
+                    </div>`;
+               }).join('');
+            } catch (error) {
+               area.innerHTML = `<div class="error-msg">Error loading search. Please try again.</div>`;
+            }
+         }, 500);
+      }
+
+      async function openGameModal(gameId, isPolling = false) {
+         currentGameId = gameId;
+         const modal = document.getElementById('game-modal');
+         const modalContent = document.getElementById('game-center-content');
+         let modalScrollPosition = modal.scrollTop;
+         let pbpScrollPosition = 0;
+         const existingPbpList = document.querySelector('.pbp-list');
+         if (existingPbpList) pbpScrollPosition = existingPbpList.scrollTop;
+
+         if (!isPolling) {
+            modal.style.display = 'block';
+            modalContent.innerHTML = '<div class="error-msg" style="margin: 40px;">Loading live play-by-play data...</div>';
+         }
+         const sport = document.getElementById('sport-selector').value;
+
+         try {
+            const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/summary?event=${gameId}`);
+            const data = await res.json();
+            if (isPolling) triggerLivePulse();
+
+            const header = data.header;
+            const comp = header.competitions[0];
+            const home = comp.competitors.find(c => c.homeAway === 'home');
+            const away = comp.competitors.find(c => c.homeAway === 'away');
+            const statusDetail = header.competitions[0].status.type.detail;
+            const statusState = header.competitions[0].status.type.state;
+
+            let awayRingClass = '';
+            let homeRingClass = '';
+            if (sport.includes('mlb')) {
+               const inningText = statusDetail.toLowerCase();
+               if (inningText.includes('top') || inningText.includes('mid')) {
+                  awayRingClass = 'possession-ring';
+               } else if (inningText.includes('bot') || inningText.includes('end')) {
+                  homeRingClass = 'possession-ring';
+               }
+            } else {
+               let possessionTeamId = null;
+               if (comp.situation && comp.situation.possession) possessionTeamId = comp.situation.possession;
+               else if (comp.possession) possessionTeamId = comp.possession.id || comp.possession;
+               if (possessionTeamId === away.team.id) awayRingClass = 'possession-ring';
+               if (possessionTeamId === home.team.id) homeRingClass = 'possession-ring';
+            }
+
+            let html = `
+                <div class="gc-header-banner">
+                    <div>
+                        <img class="gc-logo ${awayRingClass}" src="${away.team.logos?.[0]?.href || ''}">
+                        <div class="gc-abbr">${away.team.abbreviation}</div>
+                    </div>
+                    <div class="gc-score">${away.score || 0}</div>
+                    <div class="gc-at">@</div>
+                    <div class="gc-score">${home.score || 0}</div>
+                    <div>
+                        <img class="gc-logo ${homeRingClass}" src="${home.team.logos?.[0]?.href || ''}">
+                        <div class="gc-abbr">${home.team.abbreviation}</div>
+                    </div>
+                </div>
+                <div style="text-align:center; padding: 10px; background: var(--input); color: var(--muted); font-size: 14px; font-weight: bold; border-bottom: 1px solid var(--border);">
+                    ${statusDetail}
+                </div>
+                <div class="gc-body">
+            `;
+
+            let currentBatterLastName = '';
+            if (sport.includes('mlb') && statusState === 'in') {
+               const cachedGame = gamesDataCache.find(g => String(g.id) === String(gameId));
+               const activeSituation = (cachedGame && cachedGame.competitions[0].situation) || comp.situation;
+               let b1 = '',
+                  b2 = '',
+                  b3 = '';
+               let balls = 0,
+                  strikes = 0,
+                  outs = 0;
+               let batterHtml = '';
+
+               if (activeSituation) {
+                  b1 = activeSituation.onFirst ? 'active' : '';
+                  b2 = activeSituation.onSecond ? 'active' : '';
+                  b3 = activeSituation.onThird ? 'active' : '';
+                  outs = activeSituation.outs || 0;
+                  balls = activeSituation.balls || 0;
+                  strikes = activeSituation.strikes || 0;
+
+                  if (activeSituation.batter && activeSituation.batter.athlete) {
+                     const batter = activeSituation.batter.athlete;
+                     const batterImg = batter.headshot || 'https://a.espncdn.com/i/headshots/nophoto.png';
+                     currentBatterLastName = batter.lastName || batter.shortName;
+                     batterHtml = `
+                            <div class="batter-profile" onclick="openPlayerProfile('${batter.id}', '${batter.fullName.replace(/'/g, "\\'")}', '${batterImg}', '${sport}')" style="cursor:pointer;">
+                                <img src="${batterImg}" class="batter-img">
+                                <div>
+                                    <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold;">At Bat</div>
+                                    <div style="font-weight: 900; color: var(--text);">${batter.shortName || batter.fullName}</div>
+                                </div>
+                            </div>
+                        `;
+                  }
+               }
+
+               let awayProb = 50,
+                  homeProb = 50;
+               if (data.winprobability && data.winprobability.length > 0) {
+                  homeProb = (data.winprobability[data.winprobability.length - 1].homeWinPercentage * 100).toFixed(1);
+                  awayProb = (100 - homeProb).toFixed(1);
+               }
+
+               html += `
+                <div style="font-size: 11px; font-weight: bold; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; display:flex; justify-content:space-between;">
+                    <span>${away.team.abbreviation} Win Prob: ${awayProb}%</span>
+                    <span>${home.team.abbreviation} Win Prob: ${homeProb}%</span>
+                </div>
+                <div class="prob-bar-container" style="margin-top: 0px; margin-bottom: 20px;">
+                    <div class="prob-away" style="width: ${awayProb}%;"></div>
+                    <div class="prob-home" style="width: ${homeProb}%;"></div>
+                </div>
+
+                <div class="live-situation-box">
+                    <div style="display:flex; align-items:center; gap: 30px;">
+                        <div class="diamond-container">
+                            <div class="diamond">
+                                <div class="base b2 ${b2}"></div>
+                                <div class="base b1 ${b1}"></div>
+                                <div class="base b3 ${b3}"></div>
+                                <div class="base home"></div>
+                            </div>
+                        </div>
+                        <div style="border-left: 2px solid var(--border); padding-left: 25px;">
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent); margin-bottom: 5px;">${outs} OUTS</div>
+                            <div style="font-size: 14px; font-weight: bold; color: var(--text);">Count: <span style="color:var(--muted);">${balls} Balls - ${strikes} Strikes</span></div>
+                        </div>
+                    </div>
+                    ${batterHtml}
+                </div>
+                `;
+            }
+
+            html += `<h3 style="margin-top: 0; margin-bottom: 15px; color: var(--accent);">Live Play-by-Play</h3>`;
+
+            if (data.plays && data.plays.length > 0) {
+               const recentPlays = [...data.plays].reverse();
+               html += `<div class="pbp-list">`;
+               recentPlays.forEach(play => {
+                  const isScore = play.scoringPlay;
+                  const scoreStyle = isScore ? 'background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981;' : '';
+                  let textStyle = isScore ? 'color: #10b981; font-weight: bold;' : '';
+                  const timeStr = play.clock?.displayValue ? `${play.period?.displayValue} - ${play.clock.displayValue}` : play.period?.displayValue || '';
+                  let playText = play.text || 'Play details unavailable.';
+
+                  if (currentBatterLastName && playText.includes(currentBatterLastName)) {
+                     const regex = new RegExp(`(${currentBatterLastName})`, 'gi');
+                     playText = playText.replace(regex, `<span class="batter-highlight">$1</span>`);
+                  }
+
+                  html += `
+                        <div class="pbp-item" style="${scoreStyle}">
+                            <div style="font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: bold; text-transform: uppercase;">
+                                ${timeStr} ${isScore ? '• SCORING PLAY' : ''}
+                            </div>
+                            <div style="font-size: 14px; line-height: 1.4; ${textStyle}">
+                                ${playText}
+                            </div>
+                        </div>
+                    `;
+               });
+               html += `</div>`;
+            } else {
+               html += `<div class="error-msg" style="margin-bottom: 20px;">No play-by-play data available yet.</div>`;
+            }
+
+            if (data.boxscore && data.boxscore.players) {
+               html += `<h3 style="margin-top: 30px; margin-bottom: 15px; color: var(--accent);">Box Score</h3>`;
+               data.boxscore.players.forEach(teamStats => {
+                  html += `<h4 style="color: var(--text); margin-bottom: 10px; margin-top: 25px;">${teamStats.team.displayName}</h4>`;
+                  teamStats.statistics.forEach(statGroup => {
+                     if (statGroup.athletes && statGroup.athletes.length > 0) {
+                        html += `<div style="font-size: 12px; color: var(--muted); margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold;">${statGroup.text}</div>`;
+                        html += `<div style="overflow-x: auto; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px;">`;
+                        html += `<table class="data-table" style="margin-bottom: 0; min-width: 500px;">`;
+                        html += `<tr><th style="width: 150px;">Player</th>`;
+                        statGroup.labels.forEach(label => {
+                           html += `<th style="text-align: center;">${label}</th>`;
+                        });
+                        html += `</tr>`;
+
+                        statGroup.athletes.forEach(athleteData => {
+                           const ath = athleteData.athlete;
+                           if (!athleteData.didNotPlay) {
+                              html += `<tr>`;
+                              html += `<td style="font-weight: bold; cursor: pointer; color: var(--text);" onclick="openPlayerProfile('${ath.id}', '${ath.displayName.replace(/'/g, "\\'")}', '${ath.headshot?.href || 'https://a.espncdn.com/i/headshots/nophoto.png'}', '${sport}')">${ath.shortName || ath.displayName}</td>`;
+                              athleteData.stats.forEach(stat => {
+                                 html += `<td style="text-align: center; font-weight: normal; color: var(--muted);">${stat}</td>`;
+                              });
+                              html += `</tr>`;
+                           }
+                        });
+                        html += `</table></div>`;
+                     }
+                  });
+               });
+            }
+
+            html += `</div>`;
+            modalContent.innerHTML = html;
+            modal.scrollTop = modalScrollPosition;
+            const newPbpList = document.querySelector('.pbp-list');
+            if (newPbpList) newPbpList.scrollTop = pbpScrollPosition;
+
+         } catch (error) {
+            console.error(error);
+            if (!isPolling) modalContent.innerHTML = '<div class="error-msg" style="margin: 40px;">Could not load game details. Game may not have started yet.</div>';
+         }
+      }
+
+      // Advanced Team Profile View
+      async function openTeamProfile(id, name, img, sport) {
+         const modal = document.getElementById('profile-modal');
+         const contentArea = document.getElementById('profile-content-area');
+
+         modal.style.display = 'block';
+         contentArea.innerHTML = `
+            <div style="text-align: center;">
+                <img src="${img}" style="width:100px; height:100px; background:white; border-radius:50%; object-fit:contain; margin-bottom:10px; padding: 5px; border: 2px solid var(--border);">
+                <h2 style="margin:0;">${name}</h2>
+                <div style="color: var(--muted); font-size: 14px; margin-top: 10px;">Loading team data...</div>
+            </div>
+        `;
+
+         try {
+            const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/teams/${id}`);
+            if (!res.ok) throw new Error("Failed to load team");
+            const data = await res.json();
+            const team = data.team;
+
+            const record = team.record?.items?.[0]?.summary || '--';
+            const standing = team.standingSummary || 'No standing available';
+            let nextGame = '--';
+            let nextGameTime = '';
+
+            if (team.nextEvent && team.nextEvent.length > 0) {
+               nextGame = team.nextEvent[0].shortName;
+               const status = team.nextEvent[0].competitions[0].status.type;
+               nextGameTime = status.state === 'pre' ? new Date(team.nextEvent[0].date).toLocaleString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit'
+               }) : status.shortDetail;
+            }
+
+            const isFav = isFavorite(id, 'Team');
+            const teamLogo = team.logos?.[0]?.href || img;
+            const color = team.color ? `#${team.color}` : 'var(--accent)';
+
+            contentArea.innerHTML = `
+                <div style="text-align: center;">
+                    <img src="${teamLogo}" style="width:120px; height:120px; background:white; border-radius:50%; object-fit:contain; padding: 10px; margin-bottom:15px; border: 3px solid ${color};">
+                    <h2 style="margin: 0; margin-bottom: 5px; color: var(--text);">${team.displayName || name}</h2>
+                    <div style="color: ${color}; font-weight: 900; margin-bottom: 20px;">${standing}</div>
+                    
+                    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;">
+                        <div style="background: var(--input); padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); min-width: 80px;">
+                            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px;">Overall Record</div>
+                            <div style="font-weight: 900; font-size: 18px;">${record}</div>
+                        </div>
+                        <div style="background: var(--input); padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); min-width: 120px;">
+                            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px;">Next Game</div>
+                            <div style="font-weight: 900; font-size: 14px; margin-bottom: 2px;">${nextGame}</div>
+                            <div style="font-size: 11px; color: var(--muted);">${nextGameTime}</div>
+                        </div>
+                    </div>
+
+                    <button id="fav-btn" class="${isFav ? 'btn-green' : 'btn-blue'}" onclick="toggleFavorite('${id}', '${name.replace(/'/g, "\\'")}', 'Team', '${img}', '${sport}')">
+                        ${isFav ? '★ Saved to Alerts!' : '⭐ Add to Alerts'}
+                    </button>
+                </div>
+            `;
+         } catch (err) {
+            contentArea.innerHTML = `
+                <div style="text-align: center;">
+                    <img src="${img}" style="width:100px; height:100px; background:white; border-radius:50%; object-fit:contain; margin-bottom:20px; border: 2px solid var(--border);">
+                    <h2>${name}</h2>
+                    <div style="color: #ef4444; font-size: 12px; margin-bottom: 15px; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px;">Advanced stats unavailable for this team.</div>
+                    <button id="fav-btn" class="${isFavorite(id, 'Team') ? 'btn-green' : 'btn-blue'}" onclick="toggleFavorite('${id}', '${name.replace(/'/g, "\\'")}', 'Team', '${img}', '${sport}')">
+                        ${isFavorite(id, 'Team') ? '★ Saved to Alerts!' : '⭐ Add to Alerts'}
+                    </button>
+                </div>
+            `;
+         }
+      }
+
+      // Advanced Athlete Profile View
+      async function openPlayerProfile(id, name, img, sport) {
+         const modal = document.getElementById('profile-modal');
+         const contentArea = document.getElementById('profile-content-area');
+
+         modal.style.display = 'block';
+         contentArea.innerHTML = `
+            <div style="text-align: center;">
+                <img src="${img}" style="width:100px; height:100px; background:white; border-radius:50%; object-fit:cover; margin-bottom:10px; border: 2px solid var(--border);">
+                <h2 style="margin:0;">${name}</h2>
+                <div style="color: var(--muted); font-size: 14px; margin-top: 10px;">Loading advanced profile data...</div>
+            </div>
+        `;
+
+         try {
+            const res = await fetch(`https://site.web.api.espn.com/apis/common/v3/sports/${sport}/athletes/${id}`);
+            if (!res.ok) throw new Error("Failed to load profile");
+
+            const data = await res.json();
+            const athlete = data.athlete || data;
+
+            const height = athlete.displayHeight || '--';
+            const weight = athlete.displayWeight || '--';
+            const position = athlete.position?.displayName || 'Athlete';
+            const exp = athlete.experience?.years ? `${athlete.experience.years} Yrs` : 'Rookie';
+            const age = athlete.age || '--';
+            const teamName = athlete.team?.displayName || 'Free Agent';
+            const isFav = isFavorite(id, 'Athlete');
+
+            contentArea.innerHTML = `
+                <div style="text-align: center;">
+                    <img src="${athlete.headshot?.href || img}" style="width:120px; height:120px; background:white; border-radius:50%; object-fit:cover; margin-bottom:15px; border: 3px solid var(--accent);">
+                    <h2 style="margin: 0; margin-bottom: 5px; color: var(--text);">${athlete.fullName || name}</h2>
+                    <div style="color: var(--accent); font-weight: 900; margin-bottom: 20px;">${position} • ${teamName}</div>
+                    
+                    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;">
+                        <div style="background: var(--input); padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); min-width: 60px;">
+                            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px;">Height</div>
+                            <div style="font-weight: 900; font-size: 16px;">${height}</div>
+                        </div>
+                        <div style="background: var(--input); padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); min-width: 60px;">
+                            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px;">Weight</div>
+                            <div style="font-weight: 900; font-size: 16px;">${weight}</div>
+                        </div>
+                        <div style="background: var(--input); padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); min-width: 60px;">
+                            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px;">Age</div>
+                            <div style="font-weight: 900; font-size: 16px;">${age}</div>
+                        </div>
+                        <div style="background: var(--input); padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); min-width: 60px;">
+                            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px;">Exp</div>
+                            <div style="font-weight: 900; font-size: 16px;">${exp}</div>
+                        </div>
+                    </div>
+
+                    <button id="fav-btn" class="${isFav ? 'btn-green' : 'btn-blue'}" onclick="toggleFavorite('${id}', '${name.replace(/'/g, "\\'")}', 'Athlete', '${img}', '${sport}')">
+                        ${isFav ? '★ Saved to Alerts!' : '⭐ Add to Alerts'}
+                    </button>
+                </div>
+            `;
+         } catch (err) {
+            contentArea.innerHTML = `
+                <div style="text-align: center;">
+                    <img src="${img}" style="width:100px; height:100px; background:white; border-radius:50%; object-fit:cover; margin-bottom:20px; border: 2px solid var(--border);">
+                    <h2>${name}</h2>
+                    <div style="color: #ef4444; font-size: 12px; margin-bottom: 15px; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px;">Advanced stats unavailable for this player.</div>
+                    <button id="fav-btn" class="${isFavorite(id, 'Athlete') ? 'btn-green' : 'btn-blue'}" onclick="toggleFavorite('${id}', '${name.replace(/'/g, "\\'")}', 'Athlete', '${img}', '${sport}')">
+                        ${isFavorite(id, 'Athlete') ? '★ Saved to Alerts!' : '⭐ Add to Alerts'}
+                    </button>
+                </div>
+            `;
+         }
+      }
+   </script>
+</body>
+
+</html>
